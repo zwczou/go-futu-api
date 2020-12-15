@@ -18,6 +18,7 @@ type FutuAPI struct {
 	server *conn
 	ticker *time.Ticker
 	done   chan bool
+	ConnID uint64
 }
 
 // Config 为API配置信息
@@ -48,7 +49,9 @@ func NewFutuAPI(config *Config) (*FutuAPI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("call InitConnect error: %w", err)
 	}
-	api.ticker = time.NewTicker(time.Second * time.Duration((<-ch).S2C.GetKeepAliveInterval()))
+	resp := <-ch
+	api.ConnID = resp.S2C.GetConnID()
+	api.ticker = time.NewTicker(time.Second * time.Duration(resp.S2C.GetKeepAliveInterval()))
 	go api.heartBeat()
 	return api, nil
 }
